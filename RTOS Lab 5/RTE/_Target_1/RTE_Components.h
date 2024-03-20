@@ -3,7 +3,7 @@
  * Auto generated Run-Time-Environment Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'RTOS Lab 4' 
+ * Project: 'RTOS Lab 5' 
  * Target:  'Target 1' 
  */
 
