@@ -12,6 +12,12 @@
 #define LED_RED_PIN PIN1
 #define LED_BLUE_PIN PIN2
 #define LED_GREEN_PIN PIN3
+
+typedef struct myParam{
+	uint32 led:2;
+	uint32 delay:30
+} myParam;
+
 //Task 1 example
 void TaskRed(void *pvParameters){
 	
@@ -37,14 +43,17 @@ void TaskGreen(void *pvParameters){
 	}
 }
 
+void myTask(void *params){
+	myParam x = *(myParam *)params;
+	for( ; ; ){
+		Toggle_Bit(GPIO_PORTF_DATA_R,x.led );
+		vTaskDelay(pdMS_TO_TICKS(x.delay));
+		
+		
+	}
+}
 
-int main(void){
-
-	//Parameters that would be passed to the 3 above functions (Just for trying "void pointer casting" stuff not really useful here)
-	static const uint32 Red = LED_RED_PIN;
-	static const uint32 Blue = LED_BLUE_PIN;
-	static const uint32 Green = LED_GREEN_PIN;
-	
+void setup(void){
 	//Initiallizing the needed port for the 3 tasks
 	DIO_Init(PORT_F);
 	
@@ -57,8 +66,17 @@ int main(void){
 	//Green task setup
 	DIO_SetupDirection(PORT_F,OUT,PIN3);
 	DIO_WritePin(PORT_F,LOGIC_LOW,PIN3);
+}
+
+int main(void){
+
+	//Parameters that would be passed to the 3 above functions (Just for trying "void pointer casting" stuff not really useful here)
+	static const uint32 Red = LED_RED_PIN;
+	static const uint32 Blue = LED_BLUE_PIN;
+	static const uint32 Green = LED_GREEN_PIN;
 	
-	//Creating the 3 tasks that will run together with contex switch when a task is blocked
+	setup();
+	//Creating the 3 tasks that will run together with context switch when a task is blocked
 	
 	//Below is the function prototype description
 	/*BaseType_t xTaskCreate( TaskFunction_t pxTaskCode,
@@ -68,9 +86,20 @@ int main(void){
                             UBaseType_t uxPriority,
                             TaskHandle_t * const pxCreatedTask );*/
 														
-	xTaskCreate(TaskRed,"TaskRed",40,(void *)&Red,1,NULL);
-	xTaskCreate(TaskBlue,"TaskBlue",40,(void *)&Blue,1,NULL);
-	xTaskCreate(TaskGreen,"TaskGreen",40,(void *) &Green,1,NULL);
+	//xTaskCreate(TaskRed,"TaskRed",40,(void *)&Red,1,NULL);
+	//xTaskCreate(TaskBlue,"TaskBlue",40,(void *)&Blue,1,NULL);
+	//xTaskCreate(TaskGreen,"TaskGreen",40,(void *)&Green,1,NULL);
+	//struct x = {1,2};
+	uint32 x,y,z;
+	myParam par1 = {Red,1000};
+	myParam par2 = {Blue,2000};	
+	myParam par3 = {Green,3000};
+	x = par1.delay;
+	y = par2.delay;
+	z = par3.delay;
+	xTaskCreate( myTask,"TaskRed",40,(void *)&par1,1,NULL);
+	xTaskCreate( myTask,"TaskBlue",40,(void *)&par2,1,NULL);
+	xTaskCreate( myTask,"TaskGreen",40,(void *)&par3,1,NULL);
 
 	vTaskStartScheduler();
 	// The following line should never be reached. Omal mtnyleen 7tino leh???
